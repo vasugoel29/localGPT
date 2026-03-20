@@ -30,9 +30,15 @@ export default function ChatArea({
   const bottomRef = useRef(null);
   const containerRef = useRef(null);
 
-  // Auto-scroll to bottom
+  // Auto-scroll to bottom conditionally
   useEffect(() => {
-    bottomRef.current?.scrollIntoView({ behavior: 'smooth' });
+    if (!containerRef.current || !bottomRef.current) return;
+    const { scrollTop, scrollHeight, clientHeight } = containerRef.current;
+    const isNearBottom = scrollHeight - scrollTop - clientHeight < 100;
+
+    if (isNearBottom || messages.length <= 1) {
+      bottomRef.current.scrollIntoView({ behavior: isStreaming ? 'auto' : 'smooth' });
+    }
   }, [messages, isStreaming]);
 
   const hasMessages = messages.length > 0;

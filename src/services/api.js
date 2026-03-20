@@ -5,15 +5,10 @@ const API_BASE = import.meta.env.VITE_OLLAMA_API_BASE || 'http://localhost:11434
  * @returns {Promise<Array<{name: string}>>}
  */
 export async function fetchModels() {
-  try {
-    const res = await fetch(`${API_BASE}/tags`);
-    if (!res.ok) throw new Error('Failed to fetch models');
-    const data = await res.json();
-    return data.models || [];
-  } catch (err) {
-    console.error('[fetchModels]', err);
-    return [];
-  }
+  const res = await fetch(`${API_BASE}/tags`);
+  if (!res.ok) throw new Error('Failed to fetch models');
+  const data = await res.json();
+  return data.models || [];
 }
 
 /**
@@ -88,6 +83,10 @@ export async function streamChat(model, messages, onToken, onDone, onError, sign
     if (buffer.trim()) {
       try {
         const parsed = JSON.parse(buffer);
+        if (parsed.error) {
+          onError(parsed.error);
+          return;
+        }
         if (parsed.message?.content) onToken(parsed.message.content);
         if (parsed.done) {
           metadata = {

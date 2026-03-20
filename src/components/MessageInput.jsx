@@ -10,7 +10,8 @@ export default function MessageInput({
   disabled,
   models,
   selectedModel,
-  onModelChange 
+  onModelChange,
+  modelsLoading
 }) {
   const textareaRef = useRef(null);
 
@@ -88,6 +89,8 @@ export default function MessageInput({
             models={models}
             selectedModel={selectedModel}
             onModelChange={onModelChange}
+            disabled={isStreaming}
+            loading={modelsLoading}
           />
           <div className="flex-1" />
           <p className="text-[10px] text-[var(--color-text-muted)] hidden sm:block">

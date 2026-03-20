@@ -21,7 +21,6 @@ export default function App() {
 
   const [selectedModel, setSelectedModel] = useState('');
   const [sidebarOpen, setSidebarOpen] = useState(false);
-  const [pendingMessage, setPendingMessage] = useState(null);
 
   // Auto-select first model once loaded
   useEffect(() => {
@@ -30,25 +29,22 @@ export default function App() {
     }
   }, [models, selectedModel]);
 
-  // Current messages from active conversation
-  const messages = activeConversation?.messages || [];
-
-  const setMessages = useCallback(
-    (msgs) => {
-      if (activeId) {
-        setConvMessages(activeId, msgs);
-      }
-    },
-    [activeId, setConvMessages]
-  );
+  // Sync selectedModel UI strictly from current activeConversation when navigating records
+  useEffect(() => {
+    if (activeConversation?.model) {
+      setSelectedModel(activeConversation.model);
+    }
+  }, [activeId, activeConversation?.model]);
 
   const currentModel = activeConversation?.model || selectedModel;
+  const messages = activeConversation?.messages || [];
 
   const { isStreaming, error, metadata, sendMessage, regenerate, stopStreaming, clearChat } =
     useChat({
       messages,
-      setMessages,
+      setMessages: setConvMessages,
       model: currentModel,
+      activeId
     });
 
   const handleNewChat = useCallback(() => {
@@ -58,24 +54,16 @@ export default function App() {
 
   const handleSend = useCallback(
     (content) => {
-      // Auto-create conversation if none active
-      if (!activeId) {
-        createConversation(selectedModel);
-        setPendingMessage(content);
-        return;
+      let currentActiveId = activeId;
+      // Auto-create conversation strictly synchronously
+      if (!currentActiveId) {
+        const newConv = createConversation(selectedModel);
+        currentActiveId = newConv.id;
       }
-      sendMessage(content);
+      sendMessage(content, currentActiveId);
     },
     [activeId, createConversation, selectedModel, sendMessage]
   );
-
-  // Process pending message once activeId becomes available
-  useEffect(() => {
-    if (activeId && pendingMessage) {
-      sendMessage(pendingMessage);
-      setPendingMessage(null);
-    }
-  }, [activeId, pendingMessage, sendMessage]);
 
   const handleModelChange = useCallback(
     (model) => {

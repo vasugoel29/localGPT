@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { Sparkles, ChevronDown, Code, FileText, TestTube, Lightbulb, MessageCircle, Bug } from 'lucide-react';
 
 const TEMPLATES = [
@@ -37,10 +37,20 @@ const TEMPLATES = [
 export default function PromptTemplates({ onSelect }) {
   const [isOpen, setIsOpen] = useState(false);
 
+  useEffect(() => {
+    if (!isOpen) return;
+    const handleKeyDown = (e) => {
+      if (e.key === 'Escape') setIsOpen(false);
+    };
+    window.addEventListener('keydown', handleKeyDown);
+    return () => window.removeEventListener('keydown', handleKeyDown);
+  }, [isOpen]);
+
   return (
     <div className="relative">
       <button
         type="button"
+        aria-expanded={isOpen}
         onClick={() => setIsOpen(!isOpen)}
         className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs text-[var(--color-text-muted)] hover:text-[var(--color-text-secondary)] hover:bg-[var(--color-bg-hover)] transition-colors cursor-pointer"
         title="Prompt Templates"

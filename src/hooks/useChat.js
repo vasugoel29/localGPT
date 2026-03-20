@@ -1,7 +1,7 @@
 import { useState, useRef, useCallback, useEffect } from 'react';
 import { streamChat } from '../services/api';
 
-export function useChat({ messages, setMessages, model }) {
+export function useChat({ messages, setMessages, model, activeId }) {
   const [isStreaming, setIsStreaming] = useState(false);
   const [error, setError] = useState(null);
   const [metadata, setMetadata] = useState(null);
@@ -14,9 +14,21 @@ export function useChat({ messages, setMessages, model }) {
     messagesRef.current = messages;
   }, [messages]);
 
+  // Reset streaming UI bindings when switching chats securely
+  useEffect(() => {
+    setIsStreaming(false);
+    setError(null);
+    setMetadata(null);
+  }, [activeId]);
+
   const sendMessage = useCallback(
-    async (content) => {
+    async (content, specificId = activeId) => {
       if (!content.trim() || !model) return;
+      
+      if (!specificId) {
+        console.warn('[useChat] Dropping message, no valid conversation scope');
+        return;
+      }
 
       if (abortRef.current) {
         abortRef.current.abort();
@@ -28,7 +40,7 @@ export function useChat({ messages, setMessages, model }) {
       
       const newHistory = [...messagesRef.current, userMessage];
 
-      setMessages((prev) => {
+      setMessages(specificId, (prev) => {
         return [...prev, userMessage, { id: assistantId, role: 'assistant', content: '' }];
       });
 
@@ -43,7 +55,7 @@ export function useChat({ messages, setMessages, model }) {
         newHistory,
         (token) => {
           assistantContent += token;
-          setMessages((prev) => [
+          setMessages(specificId, (prev) => [
             ...prev.slice(0, -1),
             { id: assistantId, role: 'assistant', content: assistantContent },
           ]);
@@ -56,13 +68,13 @@ export function useChat({ messages, setMessages, model }) {
           setError(errMsg);
           setIsStreaming(false);
           if (!assistantContent) {
-            setMessages((prev) => prev.slice(0, -1));
+            setMessages(specificId, (prev) => prev.slice(0, -1));
           }
         },
         abortRef.current.signal
       );
     },
-    [model, setMessages]
+    [model, setMessages, activeId]
   );
 
   const regenerate = useCallback(async () => {
@@ -78,7 +90,7 @@ export function useChat({ messages, setMessages, model }) {
     const withoutLast = lastMsg?.role === 'assistant' ? currentMessages.slice(0, -1) : currentMessages;
     const assistantId = crypto.randomUUID();
 
-    setMessages([...withoutLast, { id: assistantId, role: 'assistant', content: '' }]);
+    setMessages(activeId, [...withoutLast, { id: assistantId, role: 'assistant', content: '' }]);
     setIsStreaming(true);
     setError(null);
     setMetadata(null);
@@ -90,7 +102,7 @@ export function useChat({ messages, setMessages, model }) {
       withoutLast,
       (token) => {
         assistantContent += token;
-        setMessages((prev) => [
+        setMessages(activeId, (prev) => [
           ...prev.slice(0, -1),
           { id: assistantId, role: 'assistant', content: assistantContent },
         ]);
@@ -103,12 +115,12 @@ export function useChat({ messages, setMessages, model }) {
         setError(errMsg);
         setIsStreaming(false);
         if (!assistantContent) {
-          setMessages((prev) => prev.slice(0, -1));
+          setMessages(activeId, (prev) => prev.slice(0, -1));
         }
       },
       abortRef.current.signal
     );
-  }, [model, setMessages]);
+  }, [model, setMessages, activeId]);
 
   const stopStreaming = useCallback(() => {
     abortRef.current?.abort();
@@ -116,10 +128,12 @@ export function useChat({ messages, setMessages, model }) {
   }, []);
 
   const clearChat = useCallback(() => {
-    setMessages([]);
+    abortRef.current?.abort();
+    setIsStreaming(false);
+    setMessages(activeId, []);
     setError(null);
     setMetadata(null);
-  }, [setMessages]);
+  }, [setMessages, activeId]);
 
   return {
     isStreaming,

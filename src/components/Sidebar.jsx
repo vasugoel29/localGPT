@@ -67,6 +67,7 @@ export default function Sidebar({
                 role="button"
                 tabIndex={0}
                 onKeyDown={(e) => {
+                  if (e.target !== e.currentTarget) return;
                   if (e.key === 'Enter' || e.key === ' ') {
                     e.preventDefault();
                     onSelect(conv.id);
@@ -95,7 +96,7 @@ export default function Sidebar({
                     e.stopPropagation();
                     onDelete(conv.id);
                   }}
-                  className="opacity-0 group-hover:opacity-100 p-1 rounded hover:bg-[var(--color-bg-tertiary)] transition-all cursor-pointer"
+                  className="opacity-100 md:opacity-0 group-hover:opacity-100 focus:opacity-100 focus-visible:opacity-100 p-1 rounded hover:bg-[var(--color-bg-tertiary)] transition-all cursor-pointer"
                   aria-label="Delete conversation"
                 >
                   <Trash2 size={13} className="text-[var(--color-text-muted)]" />

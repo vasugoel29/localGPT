@@ -15,7 +15,7 @@ function loadConversations() {
   }
 }
 
-function saveConversations(conversations) {
+function saveConversations(conversations, setConversationsFallback) {
   try {
     localStorage.setItem(STORAGE_KEY, JSON.stringify(conversations));
   } catch (error) {
@@ -24,6 +24,7 @@ function saveConversations(conversations) {
       const pruned = conversations.slice(0, Math.max(1, Math.floor(conversations.length / 2)));
       try {
         localStorage.setItem(STORAGE_KEY, JSON.stringify(pruned));
+        if (setConversationsFallback) setConversationsFallback(pruned);
       } catch (retryErr) {
         console.error('Failed to save even after pruning:', retryErr);
       }
@@ -39,7 +40,10 @@ export function useConversations() {
 
   // Persist on change
   useEffect(() => {
-    saveConversations(conversations);
+    const timer = setTimeout(() => {
+      saveConversations(conversations, setConversations);
+    }, 1000);
+    return () => clearTimeout(timer);
   }, [conversations]);
 
   const activeConversation = useMemo(

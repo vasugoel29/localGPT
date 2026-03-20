@@ -21,7 +21,9 @@ export default function SystemMonitor() {
           });
         }
       } catch (err) {
-        // silently ignore
+        if (import.meta.env.DEV) {
+          console.error('[SystemMonitor] Polling failed:', err);
+        }
       }
       if (isMounted) {
         timer = setTimeout(poll, 2000);
@@ -39,18 +41,18 @@ export default function SystemMonitor() {
   if (!window.__TAURI_INTERNALS__) return null;
 
   return (
-    <div className="flex items-center justify-center gap-1.5 px-2 py-1.5 bg-[var(--color-bg-tertiary)] rounded-full border border-[var(--color-border)] text-[9px] sm:text-[10px] text-[var(--color-text-muted)] shadow-sm max-w-full overflow-hidden whitespace-nowrap">
+    <div className="flex items-center justify-center gap-1.5 px-2 py-1.5 bg-(--color-bg-tertiary) rounded-full border border-(--color-border) text-[9px] sm:text-[10px] text-(--color-text-muted) shadow-sm max-w-full overflow-hidden whitespace-nowrap">
       <div className="flex items-center gap-1 flex-shrink-0">
-        <Activity size={12} className="text-[var(--color-accent)] animate-pulse hidden sm:block" />
+        <Activity size={12} className="text-(--color-accent) animate-pulse hidden sm:block" />
         <span className="font-medium font-mono w-8 text-right">{stats.cpu}%</span>
         <span className="uppercase text-[9px] tracking-wider opacity-60">CPU</span>
       </div>
-      <div className="w-px h-3 bg-[var(--color-border)] opacity-60 flex-shrink-0" />
+      <div className="w-px h-3 bg-(--color-border) opacity-60 flex-shrink-0" />
       <div className="flex items-center gap-1 flex-shrink-0">
         <span className="font-medium font-mono w-8 text-right">{stats.gpu}%</span>
         <span className="uppercase text-[9px] tracking-wider opacity-60">GPU</span>
       </div>
-      <div className="w-px h-3 bg-[var(--color-border)] opacity-60 flex-shrink-0" />
+      <div className="w-px h-3 bg-(--color-border) opacity-60 flex-shrink-0" />
       <div className="flex items-center gap-1 flex-shrink-0">
         <span className="font-medium font-mono w-6 text-right">{stats.ram}</span>
         <span className="uppercase text-[9px] tracking-wider opacity-60">GB RAM</span>

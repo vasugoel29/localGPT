@@ -5,6 +5,7 @@ use std::process::Command;
 
 struct SystemState(Mutex<System>);
 
+#[cfg(target_os = "macos")]
 fn get_macos_gpu_usage() -> f64 {
     if let Ok(output) = Command::new("ioreg")
         .arg("-l")
@@ -27,17 +28,21 @@ fn get_macos_gpu_usage() -> f64 {
     0.0
 }
 
+#[cfg(not(target_os = "macos"))]
+fn get_macos_gpu_usage() -> f64 {
+    0.0
+}
+
 #[tauri::command]
 fn get_system_usage(state: State<'_, SystemState>) -> Result<serde_json::Value, String> {
-    let mut sys = state.0.lock().map_err(|e| format!("failed to acquire system state lock: {}", e))?;
-    // Refresh only the specific components we care about for performance
-    sys.refresh_cpu_usage();
-    sys.refresh_memory();
+    // Quickly lock and refresh data, storing them off, securely dropping the struct scope mutex 
+    let (cpu_usage, total_memory, used_memory) = {
+        let mut sys = state.0.lock().map_err(|e| format!("failed to acquire system state lock: {}", e))?;
+        sys.refresh_cpu_usage();
+        sys.refresh_memory();
+        (sys.global_cpu_usage(), sys.total_memory(), sys.used_memory())
+    };
 
-    // CPU usage is global
-    let cpu_usage = sys.global_cpu_usage();
-    let total_memory = sys.total_memory();
-    let used_memory = sys.used_memory();
     let gpu_usage = get_macos_gpu_usage();
 
     Ok(serde_json::json!({

@@ -1,15 +1,18 @@
 import { useState } from 'react';
 import { ChevronDown, Cpu } from 'lucide-react';
 
-export default function ModelSelector({ models, selectedModel, onModelChange }) {
+export default function ModelSelector({ models, selectedModel, onModelChange, disabled, loading }) {
   const [isOpen, setIsOpen] = useState(false);
 
   return (
     <div className="relative">
       <button
         type="button"
-        onClick={() => setIsOpen(!isOpen)}
-        className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs text-[var(--color-text-muted)] hover:text-[var(--color-text-secondary)] hover:bg-[var(--color-bg-hover)] transition-colors cursor-pointer"
+        disabled={disabled}
+        onClick={() => !disabled && setIsOpen(!isOpen)}
+        className={`flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs text-[var(--color-text-muted)] transition-colors ${
+          disabled ? 'opacity-50 cursor-not-allowed' : 'hover:text-[var(--color-text-secondary)] hover:bg-[var(--color-bg-hover)] cursor-pointer'
+        }`}
         title="Select Model"
       >
         <Cpu size={14} />
@@ -28,9 +31,13 @@ export default function ModelSelector({ models, selectedModel, onModelChange }) 
           />
           <div className="absolute bottom-full left-0 mb-2 bg-[var(--color-bg-tertiary)] border border-[var(--color-border)] rounded-lg shadow-xl z-50 min-w-[200px] max-h-60 overflow-y-auto">
             <div className="p-1">
-              {models.length === 0 ? (
+              {models.length === 0 && !loading ? (
                 <div className="px-3 py-2 text-sm text-[var(--color-text-muted)] whitespace-nowrap">
                   No models found
+                </div>
+              ) : models.length === 0 && loading ? (
+                <div className="px-3 py-2 text-sm text-[var(--color-text-muted)] whitespace-nowrap">
+                  Loading models...
                 </div>
               ) : (
                 models.map((m) => (
