@@ -3,7 +3,7 @@ import ReactMarkdown from 'react-markdown';
 import remarkGfm from 'remark-gfm';
 import CodeBlock from './CodeBlock';
 import TypingIndicator from './TypingIndicator';
-import { RefreshCw, User, Bot, Zap, Clock } from 'lucide-react';
+import { RefreshCw, User, Bot, Zap } from 'lucide-react';
 
 function formatDuration(ns) {
   if (!ns) return null;
@@ -91,9 +91,8 @@ export default function ChatArea({
                     {msg.content}
                   </p>
                 ) : isLastEmptyAssistant ? (
-                  <div className="flex items-center gap-3 px-4 py-3 mt-1.5 rounded-xl bg-black/40 border border-[var(--color-border)] text-[var(--color-text-muted)] w-fit shadow-inner">
-                    <Clock size={16} className="animate-pulse text-[var(--color-accent)]" />
-                    <span className="text-sm font-medium tracking-wide">Model is computing...</span>
+                  <div className="-ml-1 mt-1">
+                    <TypingIndicator />
                   </div>
                 ) : (
                   <div className="prose-chat">
