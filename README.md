@@ -51,6 +51,7 @@ The native Windows/macOS/Linux Tauri shell wraps the React frontend, which commu
 - 🤖 **Dynamic model selection** (fetched directly from Ollama)
 - ⚡ **Response metadata** (time, token count, tokens/sec)
 - ✨ **Prompt templates** (explain code, write tests, debug, etc.)
+- 💻 **System Resource Monitor** (real-time CPU & RAM tracking via Tauri native APIs)
 - ⌨️ **Keyboard shortcuts** (Cmd+K new chat, Cmd+Shift+⌫ clear)
 
 ## Project Structure

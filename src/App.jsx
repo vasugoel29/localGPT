@@ -108,9 +108,6 @@ export default function App() {
         onSelect={setActiveId}
         onNew={handleNewChat}
         onDelete={deleteConversation}
-        models={models}
-        selectedModel={selectedModel}
-        onModelChange={handleModelChange}
         isOpen={sidebarOpen}
         onClose={() => setSidebarOpen(false)}
       />
@@ -139,6 +136,9 @@ export default function App() {
           isStreaming={isStreaming}
           onStop={stopStreaming}
           disabled={!selectedModel}
+          models={models}
+          selectedModel={selectedModel}
+          onModelChange={handleModelChange}
         />
       </main>
     </div>

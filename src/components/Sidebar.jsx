@@ -7,6 +7,7 @@ import {
   X,
 } from 'lucide-react';
 import { useState } from 'react';
+import SystemMonitor from './SystemMonitor';
 
 export default function Sidebar({
   conversations,
@@ -14,14 +15,9 @@ export default function Sidebar({
   onSelect,
   onNew,
   onDelete,
-  models,
-  selectedModel,
-  onModelChange,
   isOpen,
   onClose,
 }) {
-  const [modelDropdownOpen, setModelDropdownOpen] = useState(false);
-
   return (
     <>
       {/* Mobile overlay */}
@@ -58,54 +54,7 @@ export default function Sidebar({
           </button>
         </div>
 
-        {/* Model Selector */}
-        <div className="px-3 pb-3">
-          <div className="relative">
-            <button
-              onClick={() => setModelDropdownOpen(!modelDropdownOpen)}
-              className="w-full flex items-center justify-between px-3 py-2 rounded-lg bg-[var(--color-bg-tertiary)] hover:bg-[var(--color-bg-hover)] transition-colors text-sm cursor-pointer"
-            >
-              <span className="truncate text-[var(--color-text-secondary)]">
-                {selectedModel || 'Select model'}
-              </span>
-              <ChevronDown
-                size={14}
-                className={`text-[var(--color-text-muted)] transition-transform ${
-                  modelDropdownOpen ? 'rotate-180' : ''
-                }`}
-              />
-            </button>
-            {modelDropdownOpen && (
-              <div className="absolute top-full left-0 right-0 mt-1 bg-[var(--color-bg-tertiary)] border border-[var(--color-border)] rounded-lg shadow-xl z-10 max-h-60 overflow-y-auto">
-                {models.length === 0 ? (
-                  <div className="px-3 py-2 text-sm text-[var(--color-text-muted)]">
-                    No models found
-                  </div>
-                ) : (
-                  models.map((m) => (
-                    <button
-                      key={m.name}
-                      onClick={() => {
-                        onModelChange(m.name);
-                        setModelDropdownOpen(false);
-                      }}
-                      className={`w-full text-left px-3 py-2 text-sm hover:bg-[var(--color-bg-hover)] transition-colors first:rounded-t-lg last:rounded-b-lg cursor-pointer ${
-                        selectedModel === m.name
-                          ? 'text-[var(--color-accent)] bg-[var(--color-bg-hover)]'
-                          : 'text-[var(--color-text-secondary)]'
-                      }`}
-                    >
-                      {m.name}
-                    </button>
-                  ))
-                )}
-              </div>
-            )}
-          </div>
-        </div>
-
-        {/* Conversation list */}
-        <div className="flex-1 overflow-y-auto px-2">
+        <div className="flex-1 overflow-y-auto px-2 mt-3">
           {conversations.length === 0 ? (
             <p className="text-center text-[var(--color-text-muted)] text-xs mt-8">
               No conversations yet
@@ -147,7 +96,8 @@ export default function Sidebar({
         </div>
 
         {/* Footer */}
-        <div className="p-3 border-t border-[var(--color-border)]">
+        <div className="p-3 border-t border-[var(--color-border)] flex flex-col items-center gap-3">
+          <SystemMonitor />
           <p className="text-[10px] text-[var(--color-text-muted)] text-center">
             LocalGPT • Powered by Ollama
           </p>

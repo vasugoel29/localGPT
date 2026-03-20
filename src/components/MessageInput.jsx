@@ -1,8 +1,17 @@
 import { useRef, useCallback } from 'react';
 import { Send, Square } from 'lucide-react';
 import PromptTemplates from './PromptTemplates';
+import ModelSelector from './ModelSelector';
 
-export default function MessageInput({ onSend, isStreaming, onStop, disabled }) {
+export default function MessageInput({ 
+  onSend, 
+  isStreaming, 
+  onStop, 
+  disabled,
+  models,
+  selectedModel,
+  onModelChange 
+}) {
   const textareaRef = useRef(null);
 
   const handleSubmit = useCallback(() => {
@@ -62,7 +71,7 @@ export default function MessageInput({ onSend, isStreaming, onStop, disabled }) 
             </button>
           )}
         </div>
-        <div className="flex items-center justify-between mt-1.5">
+        <div className="flex items-center gap-2 mt-1.5 px-1">
           <PromptTemplates
             onSelect={(prompt) => {
               if (textareaRef.current) {
@@ -74,7 +83,13 @@ export default function MessageInput({ onSend, isStreaming, onStop, disabled }) 
               }
             }}
           />
-          <p className="text-[10px] text-[var(--color-text-muted)]">
+          <ModelSelector 
+            models={models}
+            selectedModel={selectedModel}
+            onModelChange={onModelChange}
+          />
+          <div className="flex-1" />
+          <p className="text-[10px] text-[var(--color-text-muted)] hidden sm:block">
             LocalGPT uses Ollama. Responses are generated locally.
           </p>
         </div>
