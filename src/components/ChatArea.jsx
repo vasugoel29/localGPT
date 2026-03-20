@@ -3,7 +3,7 @@ import ReactMarkdown from 'react-markdown';
 import remarkGfm from 'remark-gfm';
 import CodeBlock from './CodeBlock';
 import TypingIndicator from './TypingIndicator';
-import { RefreshCw, User, Bot, Zap } from 'lucide-react';
+import { RefreshCw, User, Bot, Zap, Clock } from 'lucide-react';
 
 function formatDuration(ns) {
   if (!ns) return null;
@@ -57,7 +57,11 @@ export default function ChatArea({
         </div>
       ) : (
         <div className="max-w-3xl mx-auto px-4 py-6">
-          {messages.map((msg, i) => (
+          {messages.map((msg, i) => {
+            const isLastEmptyAssistant = 
+              msg.role === 'assistant' && !msg.content && isStreaming && i === messages.length - 1;
+
+            return (
             <div
               key={msg.id || i}
               className={`flex gap-5 mb-8 ${
@@ -80,6 +84,11 @@ export default function ChatArea({
                   <p className="text-sm leading-relaxed whitespace-pre-wrap">
                     {msg.content}
                   </p>
+                ) : isLastEmptyAssistant ? (
+                  <div className="flex items-center gap-3 px-4 py-3 mt-1.5 rounded-xl bg-black/40 border border-[var(--color-border)] text-[var(--color-text-muted)] w-fit shadow-inner">
+                    <Clock size={16} className="animate-pulse text-[var(--color-accent)]" />
+                    <span className="text-sm font-medium tracking-wide">Model is computing...</span>
+                  </div>
                 ) : (
                   <div className="prose-chat">
                     <ReactMarkdown
@@ -112,19 +121,7 @@ export default function ChatArea({
                 </div>
               )}
             </div>
-          ))}
-
-          {/* Typing indicator */}
-          {isStreaming &&
-            messages.length > 0 &&
-            !messages[messages.length - 1]?.content && (
-              <div className="flex gap-4 mb-6">
-                <div className="flex-shrink-0 w-8 h-8 rounded-full bg-[var(--color-accent)] flex items-center justify-center">
-                  <Bot size={16} className="text-white" />
-                </div>
-                <TypingIndicator />
-              </div>
-            )}
+          )})}
 
           {/* Metadata + Regenerate */}
           {!isStreaming && lastIsAssistant && (

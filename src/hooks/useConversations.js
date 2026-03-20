@@ -74,16 +74,23 @@ export function useConversations() {
     setActiveId((currentId) => (currentId === id ? null : currentId));
   }, []);
 
-  const setMessages = useCallback((id, messages) => {
+  const setMessages = useCallback((id, messagesOrUpdater) => {
     setConversations((prev) =>
       prev.map((c) => {
         if (c.id !== id) return c;
+        
+        // Evaluate if updater function was passed
+        const newMessages = typeof messagesOrUpdater === 'function' 
+          ? messagesOrUpdater(c.messages) 
+          : messagesOrUpdater;
+
         // Auto-title from first user message
         const title =
-          c.title === 'New Chat' && messages.length > 0
-            ? messages.find((m) => m.role === 'user')?.content?.slice(0, 50) || 'New Chat'
+          c.title === 'New Chat' && newMessages.length > 0
+            ? newMessages.find((m) => m.role === 'user')?.content?.slice(0, 50) || 'New Chat'
             : c.title;
-        return { ...c, messages, title, updatedAt: Date.now() };
+            
+        return { ...c, messages: newMessages, title, updatedAt: Date.now() };
       })
     );
   }, []);

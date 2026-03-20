@@ -1,4 +1,4 @@
-import { useState, useRef, useCallback } from 'react';
+import { useState, useRef, useCallback, useEffect } from 'react';
 import { streamChat } from '../services/api';
 
 export function useChat({ messages, setMessages, model }) {
@@ -6,6 +6,13 @@ export function useChat({ messages, setMessages, model }) {
   const [error, setError] = useState(null);
   const [metadata, setMetadata] = useState(null);
   const abortRef = useRef(null);
+
+  // Sync messages to a ref so they can be read synchronously inside callbacks
+  // without depending on React's unpredictable eager updater evaluation.
+  const messagesRef = useRef(messages);
+  useEffect(() => {
+    messagesRef.current = messages;
+  }, [messages]);
 
   const sendMessage = useCallback(
     async (content) => {
@@ -19,11 +26,10 @@ export function useChat({ messages, setMessages, model }) {
       const userMessage = { id: crypto.randomUUID(), role: 'user', content: content.trim() };
       const assistantId = crypto.randomUUID();
       
-      let newMessages = [];
+      const newHistory = [...messagesRef.current, userMessage];
+
       setMessages((prev) => {
-        // Compute new messages to send to streamChat based on actual current state
-        newMessages = [...prev, userMessage];
-        return [...newMessages, { id: assistantId, role: 'assistant', content: '' }];
+        return [...prev, userMessage, { id: assistantId, role: 'assistant', content: '' }];
       });
 
       setIsStreaming(true);
@@ -34,7 +40,7 @@ export function useChat({ messages, setMessages, model }) {
 
       await streamChat(
         model,
-        newMessages,
+        newHistory,
         (token) => {
           assistantContent += token;
           setMessages((prev) => [
@@ -60,15 +66,16 @@ export function useChat({ messages, setMessages, model }) {
   );
 
   const regenerate = useCallback(async () => {
-    if (messages.length < 2) return;
+    const currentMessages = messagesRef.current;
+    if (currentMessages.length < 2) return;
 
     if (abortRef.current) {
       abortRef.current.abort();
     }
     abortRef.current = new AbortController();
 
-    const lastMsg = messages[messages.length - 1];
-    const withoutLast = lastMsg?.role === 'assistant' ? messages.slice(0, -1) : messages;
+    const lastMsg = currentMessages[currentMessages.length - 1];
+    const withoutLast = lastMsg?.role === 'assistant' ? currentMessages.slice(0, -1) : currentMessages;
     const assistantId = crypto.randomUUID();
 
     setMessages([...withoutLast, { id: assistantId, role: 'assistant', content: '' }]);
@@ -101,7 +108,7 @@ export function useChat({ messages, setMessages, model }) {
       },
       abortRef.current.signal
     );
-  }, [messages, model, setMessages]);
+  }, [model, setMessages]);
 
   const stopStreaming = useCallback(() => {
     abortRef.current?.abort();
