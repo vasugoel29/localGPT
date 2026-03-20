@@ -40,6 +40,7 @@ export default function PromptTemplates({ onSelect }) {
   return (
     <div className="relative">
       <button
+        type="button"
         onClick={() => setIsOpen(!isOpen)}
         className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs text-[var(--color-text-muted)] hover:text-[var(--color-text-secondary)] hover:bg-[var(--color-bg-hover)] transition-colors cursor-pointer"
         title="Prompt Templates"
@@ -64,6 +65,7 @@ export default function PromptTemplates({ onSelect }) {
                 const Icon = t.icon;
                 return (
                   <button
+                    type="button"
                     key={t.label}
                     onClick={() => {
                       onSelect(t.prompt);

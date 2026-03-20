@@ -38,10 +38,10 @@ export default function Sidebar({
         `}
       >
         {/* Header */}
-        <div className="p-3 flex items-center justify-between">
+        <div className="px-3 py-4 flex items-center justify-between">
           <button
             onClick={onNew}
-            className="flex items-center gap-2 px-3 py-2 rounded-lg bg-[var(--color-bg-tertiary)] hover:bg-[var(--color-bg-hover)] transition-colors text-sm font-medium flex-1 cursor-pointer"
+            className="flex items-center gap-2 px-3 py-2.5 rounded-lg bg-[var(--color-bg-tertiary)] hover:bg-[var(--color-bg-hover)] transition-colors text-sm font-medium flex-1 cursor-pointer"
           >
             <Plus size={16} />
             New Chat
@@ -49,12 +49,13 @@ export default function Sidebar({
           <button
             className="md:hidden ml-2 p-2 rounded-lg hover:bg-[var(--color-bg-hover)] transition-colors cursor-pointer"
             onClick={onClose}
+            aria-label="Close sidebar"
           >
             <X size={18} />
           </button>
         </div>
 
-        <div className="flex-1 overflow-y-auto px-2 mt-3">
+        <div className="flex-1 overflow-y-auto px-3 mt-1">
           {conversations.length === 0 ? (
             <p className="text-center text-[var(--color-text-muted)] text-xs mt-8">
               No conversations yet
@@ -63,7 +64,16 @@ export default function Sidebar({
             conversations.map((conv) => (
               <div
                 key={conv.id}
-                className={`group flex items-center gap-2 px-3 py-2.5 rounded-lg mb-0.5 cursor-pointer transition-colors ${
+                role="button"
+                tabIndex={0}
+                onKeyDown={(e) => {
+                  if (e.key === 'Enter' || e.key === ' ') {
+                    e.preventDefault();
+                    onSelect(conv.id);
+                    onClose();
+                  }
+                }}
+                className={`group flex items-center gap-3 px-3 py-3 rounded-lg mb-1 cursor-pointer transition-colors ${
                   activeId === conv.id
                     ? 'bg-[var(--color-bg-active)]'
                     : 'hover:bg-[var(--color-bg-hover)]'
@@ -96,9 +106,9 @@ export default function Sidebar({
         </div>
 
         {/* Footer */}
-        <div className="p-3 border-t border-[var(--color-border)] flex flex-col items-center gap-3">
+        <div className="p-3 border-t border-[var(--color-border)] flex flex-col items-center gap-4">
           <SystemMonitor />
-          <p className="text-[10px] text-[var(--color-text-muted)] text-center">
+          <p className="text-[10px] text-[var(--color-text-muted)] text-center leading-relaxed">
             LocalGPT • Powered by Ollama
           </p>
         </div>

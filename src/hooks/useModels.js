@@ -1,21 +1,32 @@
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useRef } from 'react';
 import { fetchModels } from '../services/api';
 
 export function useModels() {
   const [models, setModels] = useState([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
+  const requestIdRef = useRef(0);
 
   const load = async () => {
-    setLoading(true);
-    setError(null);
+    const requestId = ++requestIdRef.current;
+    if (requestId === requestIdRef.current) {
+      setLoading(true);
+      setError(null);
+    }
+    
     try {
       const list = await fetchModels();
-      setModels(list);
+      if (requestId === requestIdRef.current) {
+        setModels(list);
+      }
     } catch (err) {
-      setError(err.message);
+      if (requestId === requestIdRef.current) {
+        setError(err.message);
+      }
     } finally {
-      setLoading(false);
+      if (requestId === requestIdRef.current) {
+        setLoading(false);
+      }
     }
   };
 

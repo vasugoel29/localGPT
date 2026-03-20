@@ -25,6 +25,7 @@ export default function MessageInput({
 
   const handleKeyDown = useCallback(
     (e) => {
+      if (e.nativeEvent?.isComposing) return;
       if (e.key === 'Enter' && !e.shiftKey) {
         e.preventDefault();
         handleSubmit();
@@ -40,7 +41,7 @@ export default function MessageInput({
   };
 
   return (
-    <div className="border-t border-[var(--color-border)] bg-[var(--color-bg-primary)] px-4 py-3">
+    <div className="border-t border-[var(--color-border)] bg-[var(--color-bg-primary)] px-4 py-4 md:px-6 md:py-6">
       <div className="max-w-3xl mx-auto">
         <div className="flex items-end gap-3 bg-[var(--color-bg-tertiary)] rounded-2xl px-4 py-3 border border-[var(--color-border)] focus-within:border-[var(--color-text-muted)] transition-colors">
           <textarea
@@ -50,7 +51,7 @@ export default function MessageInput({
             placeholder="Message LocalGPT…"
             disabled={disabled}
             rows={1}
-            className="flex-1 bg-transparent resize-none outline-none text-[var(--color-text-primary)] placeholder:text-[var(--color-text-muted)] text-sm leading-6 max-h-[200px] overflow-y-auto"
+            className="flex-1 bg-transparent resize-none outline-none text-[var(--color-text-primary)] placeholder:text-[var(--color-text-muted)] text-sm leading-6 max-h-[200px] overflow-y-auto py-1"
           />
           {isStreaming ? (
             <button
@@ -71,7 +72,7 @@ export default function MessageInput({
             </button>
           )}
         </div>
-        <div className="flex items-center gap-2 mt-1.5 px-1">
+        <div className="flex items-center gap-2 mt-3 pb-1">
           <PromptTemplates
             onSelect={(prompt) => {
               if (textareaRef.current) {

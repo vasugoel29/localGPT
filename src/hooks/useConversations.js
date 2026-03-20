@@ -1,4 +1,4 @@
-import { useState, useCallback, useEffect } from 'react';
+import { useState, useCallback, useEffect, useMemo } from 'react';
 
 const STORAGE_KEY = 'localgpt_conversations';
 
@@ -16,7 +16,21 @@ function loadConversations() {
 }
 
 function saveConversations(conversations) {
-  localStorage.setItem(STORAGE_KEY, JSON.stringify(conversations));
+  try {
+    localStorage.setItem(STORAGE_KEY, JSON.stringify(conversations));
+  } catch (error) {
+    if (error.name === 'QuotaExceededError' || error instanceof DOMException) {
+      console.warn('LocalStorage quota exceeded, pruning old conversations');
+      const pruned = conversations.slice(0, Math.max(1, Math.floor(conversations.length / 2)));
+      try {
+        localStorage.setItem(STORAGE_KEY, JSON.stringify(pruned));
+      } catch (retryErr) {
+        console.error('Failed to save even after pruning:', retryErr);
+      }
+    } else {
+      console.error('Failed to save conversations:', error);
+    }
+  }
 }
 
 export function useConversations() {
@@ -28,7 +42,10 @@ export function useConversations() {
     saveConversations(conversations);
   }, [conversations]);
 
-  const activeConversation = conversations.find((c) => c.id === activeId) || null;
+  const activeConversation = useMemo(
+    () => conversations.find((c) => c.id === activeId) || null,
+    [conversations, activeId]
+  );
 
   const createConversation = useCallback((model) => {
     const newConv = {

@@ -9,15 +9,20 @@ export default function CodeBlock({ children, className }) {
   const code = String(children).replace(/\n$/, '');
 
   const handleCopy = async () => {
-    await navigator.clipboard.writeText(code);
-    setCopied(true);
-    setTimeout(() => setCopied(false), 2000);
+    try {
+      await navigator.clipboard.writeText(code);
+      setCopied(true);
+      setTimeout(() => setCopied(false), 2000);
+    } catch (error) {
+      console.error('Clipboard write failed:', error);
+      setCopied(false);
+    }
   };
 
   return (
     <div className="rounded-lg overflow-hidden my-3 border border-[var(--color-border)]">
       {/* Header */}
-      <div className="flex items-center justify-between px-4 py-2 bg-[var(--color-code-header)] text-xs text-[var(--color-text-muted)]">
+      <div className="flex items-center justify-between px-4 py-2.5 bg-[var(--color-code-header)] text-[13px] text-[var(--color-text-muted)]">
         <span className="font-mono">{language}</span>
         <button
           onClick={handleCopy}

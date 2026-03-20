@@ -12,19 +12,25 @@ A production-quality local ChatGPT/Claude-style desktop application, natively in
 ## Quick Start (Development)
 
 1. Make sure Ollama is running:
+
    ```bash
    ollama serve
    ```
 
+
 2. Install dependencies:
+
    ```bash
    npm install
    ```
 
+
 3. Start the Tauri development app (opens the desktop window):
+
    ```bash
    npm run tauri dev
    ```
+
 
 ## Architecture
 
@@ -79,4 +85,5 @@ To create a standalone native application (macOS `.app` / `.dmg`, Windows `.exe`
 ```bash
 npm run tauri build
 ```
+
 *(Requires full Rust & Xcode/C++ toolchain to compile.)*

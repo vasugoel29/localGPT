@@ -21,6 +21,7 @@ export default function App() {
 
   const [selectedModel, setSelectedModel] = useState('');
   const [sidebarOpen, setSidebarOpen] = useState(false);
+  const [pendingMessage, setPendingMessage] = useState(null);
 
   // Auto-select first model once loaded
   useEffect(() => {
@@ -59,18 +60,22 @@ export default function App() {
     (content) => {
       // Auto-create conversation if none active
       if (!activeId) {
-        const newConv = createConversation(selectedModel);
-        // We need to send the message after state updates —
-        // use a slight delay so the conversation is created
-        setTimeout(() => {
-          sendMessage(content);
-        }, 0);
+        createConversation(selectedModel);
+        setPendingMessage(content);
         return;
       }
       sendMessage(content);
     },
     [activeId, createConversation, selectedModel, sendMessage]
   );
+
+  // Process pending message once activeId becomes available
+  useEffect(() => {
+    if (activeId && pendingMessage) {
+      sendMessage(pendingMessage);
+      setPendingMessage(null);
+    }
+  }, [activeId, pendingMessage, sendMessage]);
 
   const handleModelChange = useCallback(
     (model) => {

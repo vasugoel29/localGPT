@@ -11,28 +11,35 @@ export function useChat({ messages, setMessages, model }) {
     async (content) => {
       if (!content.trim() || !model) return;
 
-      const userMessage = { role: 'user', content: content.trim() };
-      const newMessages = [...messages, userMessage];
-      setMessages(newMessages);
+      if (abortRef.current) {
+        abortRef.current.abort();
+      }
+      abortRef.current = new AbortController();
+
+      const userMessage = { id: crypto.randomUUID(), role: 'user', content: content.trim() };
+      const assistantId = crypto.randomUUID();
+      
+      let newMessages = [];
+      setMessages((prev) => {
+        // Compute new messages to send to streamChat based on actual current state
+        newMessages = [...prev, userMessage];
+        return [...newMessages, { id: assistantId, role: 'assistant', content: '' }];
+      });
+
       setIsStreaming(true);
       setError(null);
       setMetadata(null);
 
-      // We'll build the assistant response incrementally
       let assistantContent = '';
-      const messagesWithAssistant = [...newMessages, { role: 'assistant', content: '' }];
-      setMessages(messagesWithAssistant);
-
-      abortRef.current = new AbortController();
 
       await streamChat(
         model,
-        newMessages, // send history without the empty assistant placeholder
+        newMessages,
         (token) => {
           assistantContent += token;
-          setMessages([
-            ...newMessages,
-            { role: 'assistant', content: assistantContent },
+          setMessages((prev) => [
+            ...prev.slice(0, -1),
+            { id: assistantId, role: 'assistant', content: assistantContent },
           ]);
         },
         (meta) => {
@@ -42,40 +49,43 @@ export function useChat({ messages, setMessages, model }) {
         (errMsg) => {
           setError(errMsg);
           setIsStreaming(false);
-          // Remove empty assistant message on error
           if (!assistantContent) {
-            setMessages(newMessages);
+            setMessages((prev) => prev.slice(0, -1));
           }
         },
         abortRef.current.signal
       );
     },
-    [messages, model, setMessages]
+    [model, setMessages]
   );
 
   const regenerate = useCallback(async () => {
     if (messages.length < 2) return;
 
-    // Remove last assistant message
-    const withoutLast = messages.slice(0, -1);
-    setMessages(withoutLast);
+    if (abortRef.current) {
+      abortRef.current.abort();
+    }
+    abortRef.current = new AbortController();
+
+    const lastMsg = messages[messages.length - 1];
+    const withoutLast = lastMsg?.role === 'assistant' ? messages.slice(0, -1) : messages;
+    const assistantId = crypto.randomUUID();
+
+    setMessages([...withoutLast, { id: assistantId, role: 'assistant', content: '' }]);
     setIsStreaming(true);
     setError(null);
     setMetadata(null);
 
     let assistantContent = '';
-    setMessages([...withoutLast, { role: 'assistant', content: '' }]);
-
-    abortRef.current = new AbortController();
 
     await streamChat(
       model,
       withoutLast,
       (token) => {
         assistantContent += token;
-        setMessages([
-          ...withoutLast,
-          { role: 'assistant', content: assistantContent },
+        setMessages((prev) => [
+          ...prev.slice(0, -1),
+          { id: assistantId, role: 'assistant', content: assistantContent },
         ]);
       },
       (meta) => {
@@ -86,7 +96,7 @@ export function useChat({ messages, setMessages, model }) {
         setError(errMsg);
         setIsStreaming(false);
         if (!assistantContent) {
-          setMessages(withoutLast);
+          setMessages((prev) => prev.slice(0, -1));
         }
       },
       abortRef.current.signal

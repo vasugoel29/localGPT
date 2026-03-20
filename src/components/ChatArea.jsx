@@ -44,11 +44,11 @@ export default function ChatArea({
       {!hasMessages ? (
         <div className="flex items-center justify-center h-full">
           <div className="text-center px-4">
-            <div className="inline-flex items-center justify-center w-16 h-16 rounded-2xl bg-[var(--color-bg-tertiary)] mb-6">
-              <Bot size={32} className="text-[var(--color-accent)]" />
+            <div className="inline-flex items-center justify-center w-20 h-20 rounded-2xl bg-[var(--color-bg-tertiary)] mb-8">
+              <Bot size={40} className="text-[var(--color-accent)]" />
             </div>
-            <h1 className="text-2xl font-semibold mb-2">LocalGPT</h1>
-            <p className="text-[var(--color-text-muted)] text-sm max-w-md">
+            <h1 className="text-3xl font-semibold mb-4">LocalGPT</h1>
+            <p className="text-[var(--color-text-muted)] text-base max-w-md mx-auto leading-relaxed">
               {model
                 ? `Using ${model}. Start typing below to begin a conversation.`
                 : 'Select a model from the sidebar to get started.'}
@@ -59,8 +59,8 @@ export default function ChatArea({
         <div className="max-w-3xl mx-auto px-4 py-6">
           {messages.map((msg, i) => (
             <div
-              key={i}
-              className={`flex gap-4 mb-6 ${
+              key={msg.id || i}
+              className={`flex gap-5 mb-8 ${
                 msg.role === 'user' ? 'justify-end' : 'justify-start'
               }`}
             >
@@ -72,7 +72,7 @@ export default function ChatArea({
               <div
                 className={`max-w-[85%] ${
                   msg.role === 'user'
-                    ? 'bg-[var(--color-user-bubble)] rounded-2xl rounded-br-md px-4 py-3'
+                    ? 'bg-[var(--color-user-bubble)] rounded-2xl rounded-br-md px-5 py-3.5'
                     : 'flex-1 min-w-0'
                 }`}
               >

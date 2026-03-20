@@ -7,6 +7,7 @@ export default function ModelSelector({ models, selectedModel, onModelChange }) 
   return (
     <div className="relative">
       <button
+        type="button"
         onClick={() => setIsOpen(!isOpen)}
         className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs text-[var(--color-text-muted)] hover:text-[var(--color-text-secondary)] hover:bg-[var(--color-bg-hover)] transition-colors cursor-pointer"
         title="Select Model"
@@ -34,6 +35,7 @@ export default function ModelSelector({ models, selectedModel, onModelChange }) 
               ) : (
                 models.map((m) => (
                   <button
+                    type="button"
                     key={m.name}
                     onClick={() => {
                       onModelChange(m.name);

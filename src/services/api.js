@@ -1,4 +1,4 @@
-const API_BASE = 'http://localhost:11434/api';
+const API_BASE = import.meta.env.VITE_OLLAMA_API_BASE || 'http://localhost:11434/api';
 
 /**
  * Fetch available Ollama models.
@@ -95,13 +95,16 @@ export async function streamChat(model, messages, onToken, onDone, onError, sign
             eval_count: parsed.eval_count,
             eval_duration: parsed.eval_duration,
           };
+          onDone(metadata);
+          return;
         }
       } catch {
         // ignore
       }
     }
 
-    onDone(metadata);
+    console.warn('[streamChat] Stream ended without a done flag');
+    onDone(null);
   } catch (err) {
     if (err.name === 'AbortError') return;
     onError(err.message || String(err));
