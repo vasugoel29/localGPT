@@ -1,0 +1,84 @@
+import { useRef, useCallback } from 'react';
+import { Send, Square } from 'lucide-react';
+import PromptTemplates from './PromptTemplates';
+
+export default function MessageInput({ onSend, isStreaming, onStop, disabled }) {
+  const textareaRef = useRef(null);
+
+  const handleSubmit = useCallback(() => {
+    const value = textareaRef.current?.value?.trim();
+    if (!value || isStreaming) return;
+    onSend(value);
+    textareaRef.current.value = '';
+    // Reset height
+    textareaRef.current.style.height = 'auto';
+  }, [onSend, isStreaming]);
+
+  const handleKeyDown = useCallback(
+    (e) => {
+      if (e.key === 'Enter' && !e.shiftKey) {
+        e.preventDefault();
+        handleSubmit();
+      }
+    },
+    [handleSubmit]
+  );
+
+  const handleInput = (e) => {
+    const el = e.target;
+    el.style.height = 'auto';
+    el.style.height = Math.min(el.scrollHeight, 200) + 'px';
+  };
+
+  return (
+    <div className="border-t border-[var(--color-border)] bg-[var(--color-bg-primary)] px-4 py-3">
+      <div className="max-w-3xl mx-auto">
+        <div className="flex items-end gap-3 bg-[var(--color-bg-tertiary)] rounded-2xl px-4 py-3 border border-[var(--color-border)] focus-within:border-[var(--color-text-muted)] transition-colors">
+          <textarea
+            ref={textareaRef}
+            onKeyDown={handleKeyDown}
+            onInput={handleInput}
+            placeholder="Message LocalGPT…"
+            disabled={disabled}
+            rows={1}
+            className="flex-1 bg-transparent resize-none outline-none text-[var(--color-text-primary)] placeholder:text-[var(--color-text-muted)] text-sm leading-6 max-h-[200px] overflow-y-auto"
+          />
+          {isStreaming ? (
+            <button
+              onClick={onStop}
+              className="flex-shrink-0 p-2 rounded-lg bg-[var(--color-text-primary)] text-[var(--color-bg-primary)] hover:opacity-80 transition-opacity cursor-pointer"
+              aria-label="Stop generating"
+            >
+              <Square size={16} fill="currentColor" />
+            </button>
+          ) : (
+            <button
+              onClick={handleSubmit}
+              disabled={disabled}
+              className="flex-shrink-0 p-2 rounded-lg bg-[var(--color-text-primary)] text-[var(--color-bg-primary)] hover:opacity-80 transition-opacity disabled:opacity-30 cursor-pointer disabled:cursor-not-allowed"
+              aria-label="Send message"
+            >
+              <Send size={16} />
+            </button>
+          )}
+        </div>
+        <div className="flex items-center justify-between mt-1.5">
+          <PromptTemplates
+            onSelect={(prompt) => {
+              if (textareaRef.current) {
+                textareaRef.current.value = prompt;
+                textareaRef.current.focus();
+                textareaRef.current.style.height = 'auto';
+                textareaRef.current.style.height =
+                  Math.min(textareaRef.current.scrollHeight, 200) + 'px';
+              }
+            }}
+          />
+          <p className="text-[10px] text-[var(--color-text-muted)]">
+            LocalGPT uses Ollama. Responses are generated locally.
+          </p>
+        </div>
+      </div>
+    </div>
+  );
+}
