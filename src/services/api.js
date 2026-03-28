@@ -1,4 +1,4 @@
-const API_BASE = import.meta.env.VITE_OLLAMA_API_BASE || 'http://localhost:11434/api';
+const API_BASE = import.meta.env.VITE_OLLAMA_API_BASE || 'http://127.0.0.1:11434/api';
 
 /**
  * Fetch available Ollama models.
